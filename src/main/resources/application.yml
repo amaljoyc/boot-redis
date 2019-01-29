@@ -1,0 +1,10 @@
+amaljoyc:
+  redis:
+    host: localhost
+    port: 16379
+    password: mypass
+    pool:
+      maxTotal: 128
+      maxIdle: 20
+      minIdle: 8
+      testOnBorrow: true
