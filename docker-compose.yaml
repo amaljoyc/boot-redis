@@ -1,0 +1,20 @@
+version: '3.1'
+
+networks:
+  infra:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.178.0.0/24
+
+services:
+  redis:
+    image: redis
+    restart: always
+    hostname: redis
+    networks:
+      infra:
+        ipv4_address: 192.178.0.10
+    ports:
+      - 16379:6379
+    command: redis-server --requirepass mypass
