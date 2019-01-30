@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisPassword;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.jedis.JedisClientConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import redis.clients.jedis.JedisPoolConfig;
@@ -20,17 +22,22 @@ public class RedisConfig {
 
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
-        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxTotal(properties.getPool().getMaxTotal());
-        jedisPoolConfig.setMaxIdle(properties.getPool().getMaxIdle());
-        jedisPoolConfig.setMinIdle(properties.getPool().getMinIdle());
-        jedisPoolConfig.setTestOnBorrow(properties.getPool().getTestOnBorrow());
+        JedisPoolConfig poolConfig = new JedisPoolConfig();
+        poolConfig.setMaxTotal(properties.getPool().getMaxTotal());
+        poolConfig.setMaxIdle(properties.getPool().getMaxIdle());
+        poolConfig.setMinIdle(properties.getPool().getMinIdle());
+        poolConfig.setTestOnBorrow(properties.getPool().getTestOnBorrow());
 
+        JedisClientConfiguration clientConfig = JedisClientConfiguration.builder()
+                .usePooling().poolConfig(poolConfig)
+                .build();
+
+        RedisStandaloneConfiguration standaloneConfig = new RedisStandaloneConfiguration(
+                properties.getHost(), properties.getPort());
         RedisPassword redisPassword = RedisPassword.of(properties.getPassword());
-        JedisConnectionFactory factory = new JedisConnectionFactory(jedisPoolConfig);
-        factory.getStandaloneConfiguration().setHostName(properties.getHost());
-        factory.getStandaloneConfiguration().setPort(properties.getPort());
-        factory.getStandaloneConfiguration().setPassword(redisPassword);
+        standaloneConfig.setPassword(redisPassword);
+
+        JedisConnectionFactory factory = new JedisConnectionFactory(standaloneConfig, clientConfig);
         return factory;
     }
 }
